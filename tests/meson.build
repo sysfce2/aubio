@@ -53,13 +53,17 @@ sources = [
   'src/synth/test-wavetable.c',
 ]
 
-# TODO generate file
-test_file_path = meson.source_root() + '/build/tests/44100Hz_44100f_sine441_stereo.wav'
-c_args += ['-DAUBIO_TESTS_SOURCE=' + test_file_path]
+test_file_path = '44100Hz_44100f_sine441_stereo.wav'
+test_file_creation = custom_target ('create test file',
+    input: 'create_tests_source.py',
+    output: test_file_path,
+    command: [find_program('python'), '@INPUT@', '@OUTPUT@'], install: false)
+
+c_args += ['-DAUBIO_TESTS_SOURCE=' + test_file_creation[0].full_path()]
 c_args += ['-DAUBIO_UNSTABLE_API=1']
 
 foreach source : sources
   name = source.split('/')[-1].split('.')[0]
   t = executable (name, source, c_args : c_args, include_directories: '../src', link_with: aubio)
-  test (name, t)
+  test (name, t, depends: test_file_creation)
 endforeach
