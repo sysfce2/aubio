@@ -3,3 +3,4 @@ project('aubio', 'c')
 
 subdir ('src')
 subdir ('examples')
+subdir ('tests')
