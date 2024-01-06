@@ -24,49 +24,29 @@ check_include_file ("getopt.h" HAVE_GETOPT_H)
 # TODO make pkg-config optional
 find_package (PkgConfig REQUIRED)
 
-pkg_check_modules (SNDFILE sndfile>=1.0.4)
-if (SNDFILE_FOUND)
-target_compile_definitions (aubio PRIVATE HAVE_SNDFILE)
-target_compile_options (aubio PRIVATE ${SNDFILE_CFLAGS})
-target_link_options (aubio PRIVATE ${SNDFILE_LDFLAGS})
-endif ()
+function (add_optional_dependency depname depver)
 
-pkg_check_modules (SAMPLERATE samplerate>=0.0.15)
-if (SAMPLERATE_FOUND)
-target_compile_definitions (aubio PRIVATE HAVE_SAMPLERATE)
-target_compile_options (aubio PRIVATE ${SAMPLERATE_CFLAGS})
-target_link_options (aubio PRIVATE ${SAMPLERATE_LDFLAGS})
-endif ()
+  pkg_check_modules (${depname} ${depver} ${ARGN})
 
-pkg_check_modules (RUBBERBAND rubberband>=1.3)
-if (RUBBERBAND_FOUND)
-target_compile_definitions (aubio PRIVATE HAVE_RUBBERBAND)
-target_compile_options (aubio PRIVATE ${RUBBERBAND_CFLAGS})
-target_link_options (aubio PRIVATE ${RUBBERBAND_LDFLAGS})
-endif ()
+  if (${depname}_FOUND)
+    target_compile_definitions (aubio PUBLIC HAVE_${depname})
+    target_compile_options (aubio PRIVATE ${${depname}_CFLAGS})
+    target_link_options (aubio PRIVATE ${${depname}_LDFLAGS})
+  endif()
+
+endfunction()
 
 # TODO jack
 
-pkg_check_modules (LIBAV libavcodec>=54.35.0 libavformat>=52.3.0 libavutil>=52.3.0 libswresample>=1.2.0)
-if (LIBAV_FOUND)
-target_compile_definitions (aubio PRIVATE HAVE_LIBAV)
-target_compile_options (aubio PRIVATE ${LIBAV_CFLAGS})
-target_link_options (aubio PRIVATE ${LIBAV_LDFLAGS})
-endif ()
+add_optional_dependency (SNDFILE sndfile>=1.0.4)
+add_optional_dependency (SAMPLERATE samplerate>=0.0.15)
+add_optional_dependency (RUBBERBAND rubberband>=1.3)
 
-pkg_check_modules (VORBISENC vorbisenc vorbis ogg)
-if (VORBISENC_FOUND)
-target_compile_definitions (aubio PRIVATE HAVE_VORBISENC)
-target_compile_options (aubio PRIVATE ${VORBISENC_CFLAGS})
-target_link_options (aubio PRIVATE ${VORBISENC_LDFLAGS})
-endif ()
+add_optional_dependency (LIBAV libavcodec>=54.35.0 libavformat>=52.3.0
+                               libavutil>=52.3.0 libswresample>=1.2.0)
+add_optional_dependency (VORBISENC vorbisenc vorbis ogg)
+add_optional_dependency (FLAC flac)
 
-pkg_check_modules (FLAC flac)
-if (FLAC_FOUND)
-target_compile_definitions (aubio PRIVATE HAVE_FLAC)
-target_compile_options (aubio PRIVATE ${FLAC_CFLAGS})
-target_link_options (aubio PRIVATE ${FLAC_LDFLAGS})
-endif ()
 
 # generate config.h
 target_compile_definitions (aubio PRIVATE HAVE_CONFIG_H)
