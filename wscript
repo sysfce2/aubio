@@ -619,11 +619,12 @@ def txt2man(bld):
 
 def doxygen(bld):
     # build documentation from source files using doxygen
-    if bld.env['DOXYGEN']:
+    from waflib import Utils
+    if bld.env['DOXYGEN'] and not Utils.is_win32:
         bld.env.VERSION = VERSION
         rule = '( cat ${SRC[0]} && echo PROJECT_NUMBER=${VERSION}'
         rule += ' && echo OUTPUT_DIRECTORY=%s && echo HTML_OUTPUT=%s )'
-        rule += ' | doxygen - > /dev/null'
+        rule += ' | ${DOXYGEN} - > /dev/null'
         rule %= (os.path.abspath(out), 'api')
         bld( name = 'doxygen', rule = rule,
                 source = ['doc/web.cfg']
