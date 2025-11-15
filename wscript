@@ -623,7 +623,7 @@ def doxygen(bld):
         bld.env.VERSION = VERSION
         rule = '( cat ${SRC[0]} && echo PROJECT_NUMBER=${VERSION}'
         rule += ' && echo OUTPUT_DIRECTORY=%s && echo HTML_OUTPUT=%s )'
-        rule += ' | doxygen - > /dev/null'
+        rule += ' | ${DOXYGEN} - > /dev/null'
         rule %= (os.path.abspath(out), 'api')
         bld( name = 'doxygen', rule = rule,
                 source = ['doc/web.cfg']
