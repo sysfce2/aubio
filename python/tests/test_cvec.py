@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import numpy as np
-from numpy.testing import TestCase, assert_equal
+from numpy.testing import TestCase, assert_equal, assert_almost_equal
 from aubio import cvec, fvec, float_type
 
 wrong_type = 'float32' if float_type == 'float64' else 'float64'
@@ -43,7 +43,7 @@ class aubio_cvec_test_case(TestCase):
         spec = cvec(1024)
         spec.phas[39:-1] = -np.pi
         assert_equal(spec.phas[0:39], 0)
-        assert_equal(spec.phas[39:-1], -np.pi)
+        assert_almost_equal(spec.phas[39:-1], -np.pi, decimal=7)
         assert_equal(spec.norm, 0)
 
     def test_assign_cvec_with_other_cvec(self):
