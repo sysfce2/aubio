@@ -259,13 +259,15 @@ def configure(ctx):
                     color = 'YELLOW')
 
     if target_platform in [ 'ios', 'iosimulator', 'watchos', 'watchsimulator',
-                            'tvos', 'tvsimulator' ]:
+                            'tvos', 'tvsimulator', 'visionos', 'visionsimulator' ]:
         if target_platform in ['ios', 'iosimulator']:
             MINSDKVER="16.4"
         elif target_platform in ['watchos', 'watchsimulator']:
             MINSDKVER="8.0"
         elif target_platform in ['tvos', 'tvsimulator']:
             MINSDKVER="9.0"
+        elif target_platform in ['visionos', 'visionsimulator']:
+            MINSDKVER="1.0"
         xcodeslct_output = subprocess.check_output (['xcode-select', '--print-path'])
         XCODEPATH = xcodeslct_output.decode(sys.stdout.encoding).strip()
         if target_platform == 'ios':
@@ -280,6 +282,10 @@ def configure(ctx):
             SDKNAME = "AppleTVOS"
         elif target_platform == 'tvsimulator':
             SDKNAME = "AppleTVSimulator"
+        elif target_platform == 'visionos':
+            SDKNAME = "XROS"
+        elif target_platform == 'visionsimulator':
+            SDKNAME = "XRSimulator"
         else:
             raise ctx.errors.ConfigurationError ("Error: unknown target platform '"
                 + target_platform + "'")
@@ -335,8 +341,22 @@ def configure(ctx):
             ctx.env.LINKFLAGS += ['-arch', 'arm64']
             ctx.env.CFLAGS += [ '-mtvos-simulator-version-min=' + MINSDKVER ]
             ctx.env.LINKFLAGS += [ '-mtvos-simulator-version-min=' + MINSDKVER ]
-        ctx.env.CFLAGS += [ '-isysroot' , SDKROOT]
-        ctx.env.LINKFLAGS += [ '-isysroot' , SDKROOT]
+        elif target_platform == 'visionos':
+            ctx.env.CFLAGS += [ '-arch', 'arm64' ]
+            ctx.env.CFLAGS += [ '-arch', 'arm64e' ]
+            ctx.env.LINKFLAGS += ['-arch', 'arm64']
+            ctx.env.LINKFLAGS += ['-arch', 'arm64e']
+        elif target_platform == 'visionsimulator':
+            ctx.env.CFLAGS += [ '-arch', 'x86_64' ]
+            ctx.env.CFLAGS += [ '-arch', 'arm64' ]
+            ctx.env.LINKFLAGS += ['-arch', 'x86_64']
+            ctx.env.LINKFLAGS += ['-arch', 'arm64']
+        if target_platform not in ['visionos', 'visionsimulator']:
+            ctx.env.CFLAGS += [ '-isysroot' , SDKROOT]
+            ctx.env.LINKFLAGS += [ '-isysroot' , SDKROOT]
+        else:
+            ctx.env.CFLAGS += [ '--sysroot' , SDKROOT]
+            ctx.env.LINKFLAGS += [ '--sysroot' , SDKROOT]
 
     if target_platform == 'emscripten':
         if ctx.options.build_type == "debug":
@@ -601,7 +621,7 @@ def build(bld):
 
     # add sub directories
     if bld.env['DEST_OS'] not in ['ios', 'iosimulator', 'watchos', 'watchsimulator',
-                'tvos', 'tvsimulator', 'android']:
+                'tvos', 'tvsimulator', 'visionos', 'visionsimulator', 'android']:
         if bld.env['DEST_OS']=='emscripten' and not bld.options.testcmd:
             bld.options.testcmd = 'node %s'
         if bld.options.enable_examples:
